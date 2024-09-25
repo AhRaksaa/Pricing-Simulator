@@ -154,10 +154,10 @@ with tab3:
 st.write("")
 st.write("")
 st.write("")
-st.markdown('<h3 style="color: #205527;">Ask AI About The Insight:</h3>', unsafe_allow_html=True)
-user_question = st.text_input("Enter your question:")
+#st.markdown('<h3 style="color: #205527;">Data ChatBot</h3>', unsafe_allow_html=True)
+user_question = st.chat_input("Enter your question and press Enter to submit:")
 
-if st.button("Submit"):
+if user_question:
     try:
         api_key = st.secrets["OPENAI_API_KEY"]
         openai.api_key = api_key
@@ -193,14 +193,12 @@ if st.button("Submit"):
     except Exception as e:
         st.error(f"An error occurred: {e}")
 
-
-
 if st.checkbox("Show Question History"):
     if 'question_history' in st.session_state:
         for idx, (question, answer) in enumerate(st.session_state.question_history.items(), 1):
             st.write(f"{idx}. Question: {question}")
             st.write(f"Answer: {answer}")
-            
+        
         if st.button("Delete Question History"):
             delete_question_history()
             st.write("Question history deleted.")

@@ -5,3 +5,4 @@ plotly
 openpyxl
 streamlit-extras==0.4.7
 streamlit-card==1.0.2
+seaborn==0.13.0

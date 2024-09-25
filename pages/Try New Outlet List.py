@@ -65,13 +65,16 @@ if uploaded_file is not None:
     column = tab8.selectbox("Select a column:", df.columns)
 
     def identify_outliers_iqr(df, column):
-        Q1 = df[column].quantile(0.25)
-        Q3 = df[column].quantile(0.75)
-        IQR = Q3 - Q1
-        lower_bound = Q1 - 1.5 * IQR
-        upper_bound = Q3 + 1.5 * IQR
-        outliers = df[(df[column] < lower_bound) | (df[column] > upper_bound)]
-        return outliers
+        if pd.api.types.is_numeric_dtype(df[column]):
+            Q1 = df[column].quantile(0.25)
+            Q3 = df[column].quantile(0.75)
+            IQR = Q3 - Q1
+            lower_bound = Q1 - 1.5 * IQR
+            upper_bound = Q3 + 1.5 * IQR
+            outliers = df[(df[column] < lower_bound) | (df[column] > upper_bound)]
+            return outliers
+        else:
+            return pd.DataFrame()
 
     outliers = identify_outliers_iqr(df, column)
 
@@ -81,47 +84,49 @@ if uploaded_file is not None:
         tab8.write("Outliers:")
         tab8.dataframe(outliers)
 
-    fig, ax = plt.subplots(figsize=(8, 4))
-    ax.boxplot(df[column])
-    plt.title(f"Box Plot for {column}")
-    plt.xlabel(column)
-    plt.ylabel("Values")
-    tab8.pyplot(fig)
+    if pd.api.types.is_numeric_dtype(df[column]):
+        fig, ax = plt.subplots(figsize=(8, 4))
+        ax.boxplot(df[column])
+        plt.title(f"Box Plot for {column}")
+        plt.xlabel(column)
+        plt.ylabel("Values")
+        tab8.pyplot(fig)
+    else:
+        tab8.write("Box plot can only be created for numeric columns.")
 
     # User question input and submit button
-    user_question = st.text_input("Ask a question about the data:")
-    if st.button("Submit"):
-        try:
-            api_key = st.secrets["OPENAI_API_KEY"]
-            openai.api_key = api_key
+    user_question = st.chat_input("Ask a question about the data:")
+    try:
+        api_key = st.secrets["OPENAI_API_KEY"]
+        openai.api_key = api_key
 
-            dataset_summary = df.to_dict(orient='records')
+        dataset_summary = df.to_dict(orient='records')
 
-            prompt = f"""Here's some data: {dataset_summary}
+        prompt = f"""Here's some data: {dataset_summary}
 
-            Please answer the following question based on the provided data: 
-            {user_question}
-            """
+        Please answer the following question based on the provided data: 
+        {user_question}
+        """
 
-            completion = openai.ChatCompletion.create(
-                model="gpt-4o-mini",
-                messages=[
-                    {"role": "user", "content": prompt}
-                ],
-                temperature=1,
-                max_tokens=256,
-                top_p=1,
-                frequency_penalty=0,
-                presence_penalty=0
-            )
+        completion = openai.ChatCompletion.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "user", "content": prompt}
+            ],
+            temperature=1,
+            max_tokens=256,
+            top_p=1,
+            frequency_penalty=0,
+            presence_penalty=0
+        )
 
-            ai_response = completion.choices[0].message['content']
-            st.write("AI Answer:")
-            st.write(ai_response)
-        except KeyError:
-            st.error("Please set the environment variable 'OPENAI_API_KEY' with your API key")
-        except Exception as e:
-            st.error(f"An error occurred: {e}")
+        ai_response = completion.choices[0].message['content']
+        st.write("AI Answer:")
+        st.write(ai_response)
+    except KeyError:
+        st.error("Please set the environment variable 'OPENAI_API_KEY' with your API key")
+    except Exception as e:
+        st.error(f"An error occurred: {e}")
 
-else:
-    st.info("Upload a CSV file to preview its data.")
+    if not user_question:
+        st.info("Upload a CSV file to preview its data.")

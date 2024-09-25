@@ -12,6 +12,7 @@ def main():
 
     # Display the embedded link using components
     st.components.v1.iframe(embedded_link, width=800, height=600)
+    
 
 if __name__ == "__main__":
     main()

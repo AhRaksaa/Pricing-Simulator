@@ -1,8 +1,10 @@
 import streamlit as st
 import pandas as pd
+import numpy as np
 import openai
 import plotly.express as px
 from streamlit_extras.metric_cards import style_metric_cards
+#import streamlit.components.v1 as components
 
 with open('style/logo.css') as f:
     st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
@@ -56,23 +58,101 @@ style_metric_cards()
 st.write("")
 st.write("")
 #st.markdown('<h3 style="color: #205527;">Trend Line</h3>', unsafe_allow_html=True)
-with st.expander("Trend Line"):
-    for sheet_name, df in sheets_dict.items():
-        # Count the total number of outlets (rows) in the sheet
-        total_outlets = df.shape[0]
-        st.write(f"Total Outlets for {sheet_name}")
-        
-        # Sum the values in the columns 'Vol_2022 (Hl)', 'Vol_2023 (Hl)', 'Vol_2024 (Hl)'
-        total_volume = df[['Vol_2022 (Hl)', 'Vol_2023 (Hl)', 'Vol_2024 (Hl)']].sum()
-        
-        # Create a line chart for total volume by year using Plotly Express
-        #fig = px.line(x=total_volume.index, y=total_volume.values, markers=True, title=f'Total Volume by Year for {sheet_name}')
-        fig = px.line(x=total_volume.index, y=total_volume.values, markers=True)
-        fig.update_layout(xaxis_title='Year', yaxis_title='Total Volume')
-        
-        # Display the Plotly figure in Streamlit
-        st.plotly_chart(fig)
 
+# Line Graph
+tab_labels = list(sheets_dict.keys())
+tabs = st.tabs(tab_labels)
+
+# style of streamlit tab 
+st.markdown("""
+<style>
+
+	.stTabs [data-baseweb="tab-list"] {
+		gap: 20px;
+    }
+
+	.stTabs [data-baseweb="tab"] {
+		height: 40px;
+        color: #205527;
+        width: 150px;
+    }
+
+	.stTabs [aria-selected="true"] {
+  		background-color: #205527;
+        color: #FFFFFF;
+        
+	}
+</style>""", unsafe_allow_html=True)
+
+for idx, (sheet_name, df) in enumerate(sheets_dict.items()):
+    tab = tabs[idx]
+
+    # Count the total number of outlets (rows) in the sheet
+    total_outlets = df.shape[0]
+    #st.write(f"Total Outlets for {sheet_name}: {total_outlets}")
+
+    # Sum the values in the columns 'Vol_2022 (Hl)', 'Vol_2023 (Hl)', 'Vol_2024 (Hl)'
+    total_volume = df[['Vol_2022 (Hl)', 'Vol_2023 (Hl)', 'Vol_2024 (Hl)']].sum()
+
+    # Create a line chart for total volume by year using Plotly Express
+    fig = px.line(x=total_volume.index, y=total_volume.values, markers=True, title=f'Total Volume by Year for {sheet_name}')
+    fig.update_layout(xaxis_title='Year', yaxis_title='Total Volume')
+
+    # Display the Plotly figure in Streamlit
+    tab.plotly_chart(fig)
+        
+# Recommendation Part
+st.markdown('<h1 style="color: #205527;">Recommendation</h1>', unsafe_allow_html=True)
+st.write("")
+
+tab1, tab2, tab3 = st.tabs(["R Drop", "F Drop", "M Drop"])
+
+with tab1:
+    st.markdown("""
+    <style>
+        .column-border {
+            #border: 2px solid #205527;
+            padding: 10px;
+            text-align: center;
+            background-color: #205527; /* Set your desired background color here */
+            color: #FFFFFF;
+        }
+        .big-text {
+            font-size: 80px; /* Set your desired font size for '80%' here */
+            color: #FFFFFF;
+        }
+        .big-text1 {
+            font-size: 40px; /* Set your desired font size for '80%' here */
+            color: #FFFFFF;
+        }
+    </style>
+    """, unsafe_allow_html=True)
+
+    col1, col2 = st.columns(2)
+    with col1:
+        st.markdown('<div class="column-border">Acceptance Level Prediction<br><span class="big-text">80%</span></div>', unsafe_allow_html=True)
+    with col2:
+        st.markdown('<div class="column-border">Optimal Number Of Free Gratis<br><span class="big-text1">Min : 10 <br> Max : 20</span></div>', unsafe_allow_html=True)
+
+with tab2:
+    col1, col2 = st.columns(2)
+    with col1:
+        st.markdown('<div class="column-border">Acceptance Level Prediction<br><span class="big-text">50%</span></div>', unsafe_allow_html=True)
+    with col2:
+        st.markdown('<div class="column-border">Optimal Number Of Free Gratis<br><span class="big-text1">Min : 10 <br> Max : 20</span></div>', unsafe_allow_html=True)
+
+with tab3:
+    tab3.write()
+    col1, col2 = st.columns(2)
+    with col1:
+        st.markdown('<div class="column-border">Acceptance Level Prediction<br><span class="big-text">30%</span></div>', unsafe_allow_html=True)
+    with col2:
+        st.markdown('<div class="column-border">Optimal Number Of Free Gratis<br><span class="big-text1">Min : 10 <br> Max : 20</span></div>', unsafe_allow_html=True)
+
+
+# OpenAI API 
+st.write("")
+st.write("")
 st.write("")
 st.markdown('<h3 style="color: #205527;">Ask AI About The Insight:</h3>', unsafe_allow_html=True)
 user_question = st.text_input("Enter your question:")
@@ -125,14 +205,10 @@ if st.checkbox("Show Question History"):
             delete_question_history()
             st.write("Question history deleted.")
     else:
-        st.write("No questions asked yet.")\
-
-st.markdown('<h1 style="color: #205527;">Recommendation</h1>', unsafe_allow_html=True)
-st.write("")
-st.write("")
-with open('style/rfm.html', 'r') as f:
-    html_content_1 = f.read()
+        st.write("No questions asked yet.")
+#with open('style/rfm.html', 'r') as f:
+    #html_content_1 = f.read()
 
 
 # Display HTML content in Streamlit
-st.markdown(html_content_1, unsafe_allow_html=True)
+#st.markdown(html_content_1, unsafe_allow_html=True)

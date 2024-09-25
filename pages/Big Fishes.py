@@ -155,8 +155,8 @@ st.write("")
 st.write("")
 st.write("")
 #st.markdown('<h3 style="color: #205527;">Data ChatBot</h3>', unsafe_allow_html=True)
-user_question = st.chat_input("Enter your question and press Enter to submit:")
 
+user_question = st.chat_input("Enter your question and press Enter to submit:")
 if user_question:
     try:
         api_key = st.secrets["OPENAI_API_KEY"]
@@ -204,6 +204,7 @@ if st.checkbox("Show Question History"):
             st.write("Question history deleted.")
     else:
         st.write("No questions asked yet.")
+
 #with open('style/rfm.html', 'r') as f:
     #html_content_1 = f.read()
 

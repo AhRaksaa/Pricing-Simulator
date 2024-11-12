@@ -37,22 +37,22 @@ def delete_question_history():
 col1, col2, col3, col4 = st.columns(4)
 
 col1.text("WHS-B")
-col1.image("https://images.ctfassets.net/w6n4s696snx1/6oWXFRgIsRFhtUBFZ9Wkf0/bad2746aa7452fb4543e64f2f3251288/cropped-ABC-Logo-PNG-150x150.webp?w=480", width=80)
+#col1.image("https://images.ctfassets.net/w6n4s696snx1/6oWXFRgIsRFhtUBFZ9Wkf0/bad2746aa7452fb4543e64f2f3251288/cropped-ABC-Logo-PNG-150x150.webp?w=480", width=80)
 col1.metric("Total Outlests","00","")
 col1.metric("Volume Drop(KHL)","00","00K ctn")
 
 col2.text("WHS-A")
-col2.image("https://pbs.twimg.com/profile_images/1220812008712540163/sXtES8E1_400x400.jpg", width=80)
+#col2.image("https://pbs.twimg.com/profile_images/1220812008712540163/sXtES8E1_400x400.jpg", width=80)
 col2.metric("Total Outlests","00","")
 col2.metric("Volume Drop(KHL)","00","00K ctn")
 
 col3.text("DS-B")
-col3.image("https://images.ctfassets.net/w6n4s696snx1/6oWXFRgIsRFhtUBFZ9Wkf0/bad2746aa7452fb4543e64f2f3251288/cropped-ABC-Logo-PNG-150x150.webp?w=480", width=80)
+#col3.image("https://images.ctfassets.net/w6n4s696snx1/6oWXFRgIsRFhtUBFZ9Wkf0/bad2746aa7452fb4543e64f2f3251288/cropped-ABC-Logo-PNG-150x150.webp?w=480", width=80)
 col3.metric("Total Outlests","00","")
 col3.metric("Volume Drop(KHL)","00","00K ctn")
 
 col4.text("DS-B")
-col4.image("https://pbs.twimg.com/profile_images/1220812008712540163/sXtES8E1_400x400.jpg", width=80)
+#col4.image("https://pbs.twimg.com/profile_images/1220812008712540163/sXtES8E1_400x400.jpg", width=80)
 col4.metric("Total Outlests","00","")
 col4.metric("Volume Drop(KHL)","00","00K ctn")
 style_metric_cards()

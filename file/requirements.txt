@@ -1,7 +1,0 @@
-streamlit
-pandas
-openai==1.43.0
-plotly
-openpyxl
-streamlit-extras==0.4.7
-streamlit-card==1.0.2

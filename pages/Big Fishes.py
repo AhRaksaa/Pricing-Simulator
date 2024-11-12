@@ -4,7 +4,9 @@ import numpy as np
 import openai
 import plotly.express as px
 from streamlit_extras.metric_cards import style_metric_cards
-#import streamlit.components.v1 as components
+import joblib  
+import datetime
+from sklearn.preprocessing import StandardScaler
 
 with open('style/logo.css') as f:
     st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
@@ -102,53 +104,84 @@ for idx, (sheet_name, df) in enumerate(sheets_dict.items()):
     tab.plotly_chart(fig)
         
 # Recommendation Part
-st.markdown('<h1 style="color: #205527;">Recommendation</h1>', unsafe_allow_html=True)
+st.markdown('<h1 style="color: #205527;">Prediction</h1>', unsafe_allow_html=True)
 st.write("")
 
-tab1, tab2, tab3 = st.tabs(["R Drop", "F Drop", "M Drop"])
+# Load the Random Forest model using joblib
+model = joblib.load('best_model/best_rf_model.pkl')  # Use joblib to load the Random Forest model
 
-with tab1:
-    st.markdown("""
-    <style>
-        .column-border {
-            #border: 2px solid #205527;
-            padding: 10px;
-            text-align: center;
-            background-color: #205527; /* Set your desired background color here */
-            color: #FFFFFF;
-        }
-        .big-text {
-            font-size: 80px; /* Set your desired font size for '80%' here */
-            color: #FFFFFF;
-        }
-        .big-text1 {
-            font-size: 40px; /* Set your desired font size for '80%' here */
-            color: #FFFFFF;
-        }
-    </style>
-    """, unsafe_allow_html=True)
+# Function to calculate if a date is a weekend
+def weekend_or_weekday(date):
+    day_number = date.weekday()
+    return 1 if day_number >= 5 else 0
 
-    col1, col2 = st.columns(2)
-    with col1:
-        st.markdown('<div class="column-border">Acceptance Level Prediction<br><span class="big-text">80%</span></div>', unsafe_allow_html=True)
-    with col2:
-        st.markdown('<div class="column-border">Optimal Number Of Free Gratis<br><span class="big-text1">Min : 10 <br> Max : 20</span></div>', unsafe_allow_html=True)
+# Function to calculate the week of the month
+def week_of_month(date):
+    year, month, day = date.isocalendar()
+    first_week_day = (day - date.day % 7 + 1) if date.day else 1
+    return (date.day + first_week_day - 2) // 7 + 1
 
-with tab2:
-    col1, col2 = st.columns(2)
-    with col1:
-        st.markdown('<div class="column-border">Acceptance Level Prediction<br><span class="big-text">50%</span></div>', unsafe_allow_html=True)
-    with col2:
-        st.markdown('<div class="column-border">Optimal Number Of Free Gratis<br><span class="big-text1">Min : 10 <br> Max : 20</span></div>', unsafe_allow_html=True)
+# Function to check if the month is in the specified seasons
+def is_season(month):
+    return month in [3, 4, 9, 11, 12]
 
-with tab3:
-    tab3.write()
-    col1, col2 = st.columns(2)
-    with col1:
-        st.markdown('<div class="column-border">Acceptance Level Prediction<br><span class="big-text">30%</span></div>', unsafe_allow_html=True)
-    with col2:
-        st.markdown('<div class="column-border">Optimal Number Of Free Gratis<br><span class="big-text1">Min : 10 <br> Max : 20</span></div>', unsafe_allow_html=True)
+# Function to check if the selected date is a holiday
+def is_holiday(date):
+    holidays = [
+        datetime.date(date.year, 1, 1),    # New Year's Day
+        datetime.date(date.year, 12, 25),  # Christmas Day
+        datetime.date(date.year, 7, 4),    # Independence Day (USA)
+        # Add other holidays as needed
+    ]
+    return 1 if date in holidays else 0
 
+item_brand = st.selectbox("Select Item Brand", ["a", "b"])
+item_sub_brand = st.selectbox("Select Item Sub-Brand", ["b_strong", "a_first", "a_diamond", "a_korea", "b_withhold"])
+segment = st.selectbox("Select Segment", ["drink shop", "wholesaler"])
+date_input = st.date_input("Select Date", datetime.date.today())
+
+# Convert date input to datetime object
+date = pd.to_datetime(date_input)
+
+# Calculate additional features
+year = date.year
+month = date.month
+day = date.day
+is_weekend = weekend_or_weekday(date)
+week_of_month_val = week_of_month(date)
+is_season_val = is_season(month)
+is_holiday_val = is_holiday(date)  # Calculate if it's a holiday
+
+# Prepare the input data for prediction
+data = pd.DataFrame({
+    'year': [year],
+    'month': [month],
+    'day': [day],
+    'is_weekend': [is_weekend],
+    'week_of_month': [week_of_month_val],
+    'is_season': [is_season_val],
+    'is_holiday': [is_holiday_val],  # Added the is_holiday feature
+    'item_brand_b': [1 if item_brand == 'b' else 0],
+    'item_sub_brand_b_strong': [1 if item_sub_brand == 'b_strong' else 0],
+    'item_sub_brand_a_diamond': [1 if item_sub_brand == 'a_diamond' else 0],
+    'item_sub_brand_a_korea': [1 if item_sub_brand == 'a_korea' else 0],
+    'item_sub_brand_b_withhold': [1 if item_sub_brand == 'b_withhold' else 0],
+    'segment_wholesaler': [1 if segment == 'wholesaler' else 0]
+})
+
+# Initialize the StandardScaler
+scaler = StandardScaler()
+
+# Scale the features using the StandardScaler
+scaled_data = scaler.fit_transform(data)
+
+# Button to trigger prediction
+if st.button("Make Prediction"):
+    # Predict using the trained Random Forest model
+    prediction = model.predict(scaled_data)
+    
+    # Display the prediction as an integer
+    st.write(f"Predicted Quantity: {int(prediction[0])}")
 
 # OpenAI API 
 st.write("")
